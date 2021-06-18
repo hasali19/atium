@@ -21,6 +21,10 @@ impl Request {
         self.inner.uri()
     }
 
+    pub fn path(&self) -> &str {
+        self.uri().path()
+    }
+
     pub fn ext<T: Send + Sync + 'static>(&self) -> Option<&T> {
         self.inner.extensions().get()
     }
@@ -42,12 +46,12 @@ impl Request {
         self.res.as_ref()
     }
 
-    pub fn set_res(&mut self, res: Response) {
-        self.res = Some(res);
+    pub fn set_res(&mut self, res: impl Into<Response>) {
+        self.res = Some(res.into());
     }
 
-    pub fn with_res(mut self, res: Response) -> Self {
-        self.set_res(res);
+    pub fn with_res(mut self, res: impl Into<Response>) -> Self {
+        self.set_res(res.into());
         self
     }
 

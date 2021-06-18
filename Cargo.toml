@@ -11,6 +11,7 @@ anyhow = "1.0"
 async-trait = "0.1"
 hyper = { version="0.14", features=["http1", "runtime", "server"] }
 log = "0.4"
+route-recognizer = "0.2"
 
 [dev-dependencies]
 env_logger = "0.8"

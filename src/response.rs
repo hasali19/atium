@@ -42,3 +42,9 @@ impl Response {
         self.0
     }
 }
+
+impl<T: Into<Body>> From<T> for Response {
+    fn from(val: T) -> Self {
+        Response::ok().with_body(val.into())
+    }
+}

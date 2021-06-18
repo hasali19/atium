@@ -4,6 +4,7 @@ mod response;
 pub mod error;
 pub mod handler;
 pub mod logger;
+pub mod router;
 pub mod server;
 
 pub use error::RequestError;
