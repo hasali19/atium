@@ -6,6 +6,7 @@ pub mod handler;
 pub mod logger;
 pub mod router;
 pub mod server;
+pub mod state;
 
 pub use error::RequestError;
 pub use handler::{Handler, Next};
