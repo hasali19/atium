@@ -43,8 +43,38 @@ impl Response {
     }
 }
 
-impl<T: Into<Body>> From<T> for Response {
-    fn from(val: T) -> Self {
-        Response::ok().with_body(val.into())
+impl From<StatusCode> for Response {
+    fn from(val: StatusCode) -> Self {
+        Response::new().with_status(val)
+    }
+}
+
+impl From<&'static str> for Response {
+    fn from(val: &'static str) -> Self {
+        Response::new().with_body(val)
+    }
+}
+
+impl From<String> for Response {
+    fn from(val: String) -> Self {
+        Response::new().with_body(val)
+    }
+}
+
+impl From<Vec<u8>> for Response {
+    fn from(val: Vec<u8>) -> Self {
+        Response::new().with_body(val)
+    }
+}
+
+impl From<Body> for Response {
+    fn from(val: Body) -> Self {
+        Response::new().with_body(val)
+    }
+}
+
+impl<B: Into<Body>> From<(StatusCode, B)> for Response {
+    fn from((status, body): (StatusCode, B)) -> Self {
+        Response::new().with_status(status).with_body(body)
     }
 }

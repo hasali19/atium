@@ -34,7 +34,7 @@ async fn main() {
 
     let router = Router::new().build(|r| {
         r.get("/", |req: Request| async move {
-            Ok(req.with_res("hello, world!"))
+            Ok(req.with_res((StatusCode::OK, "hello, world!")))
         });
 
         r.get("/:name", |req: Request| async move {
