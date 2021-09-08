@@ -2,13 +2,13 @@ use std::collections::HashMap;
 
 use async_trait::async_trait;
 use hyper::Method;
-use route_recognizer::{Match, Params};
+use routefinder::Captures;
 
 use crate::{Handler, Request};
 
 #[derive(Default)]
 pub struct Router {
-    method_map: HashMap<Method, route_recognizer::Router<Box<dyn Handler>>>,
+    method_map: HashMap<Method, routefinder::Router<Box<dyn Handler>>>,
 }
 
 #[async_trait]
@@ -17,11 +17,10 @@ impl Handler for Router {
         let m = self
             .method_map
             .get(req.method())
-            .and_then(|r| r.recognize(req.uri().path()).ok())
-            .map(|Match { handler, params }| (handler, params));
+            .and_then(|r| r.best_match(req.uri().path()));
 
         let (handler, params) = match m {
-            Some(val) => val,
+            Some(val) => (val.handler(), val.captures().into_owned()),
             None => return next.run(req).await,
         };
 
@@ -54,7 +53,8 @@ impl Router {
         self.method_map
             .entry(method)
             .or_insert_with(Default::default)
-            .add(path, Box::new(handler));
+            .add(path, Box::new(handler))
+            .expect("invalid path");
     }
 
     method_fn!(connect, CONNECT);
@@ -74,6 +74,6 @@ pub trait RouterRequestExt {
 
 impl RouterRequestExt for Request {
     fn param(&self, name: &str) -> Option<&str> {
-        self.ext::<Params>().and_then(|params| params.find(name))
+        self.ext::<Captures>().and_then(|params| params.get(name))
     }
 }

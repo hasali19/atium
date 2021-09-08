@@ -13,7 +13,7 @@ members = ["macros"]
 async-trait = "0.1"
 hyper = { version = "0.14", features = ["http1", "runtime", "server"] }
 log = "0.4"
-route-recognizer = "0.2"
+routefinder = "0.4"
 
 dawn-macros = { path = "macros" }
 

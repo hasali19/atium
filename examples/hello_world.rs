@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use dawn::logger::Logger;
 use dawn::respond::RespondRequestExt;
-use dawn::router::Router;
+use dawn::router::{Router, RouterRequestExt};
 use dawn::{endpoint, Handler, Next, Request, Response};
 use env_logger::Env;
 use hyper::StatusCode;
@@ -36,6 +36,7 @@ async fn main() {
     let router = Router::new().build(|r| {
         r.get("/", index);
         r.get("/error", error);
+        r.get("/hello/:name", hello);
     });
 
     let addr = ([127, 0, 0, 1], 8080);
@@ -47,6 +48,14 @@ async fn main() {
 #[endpoint]
 async fn index(req: &mut Request) -> Result<(), MyError> {
     req.ok().body("hello, world!");
+    Ok(())
+}
+
+#[endpoint]
+async fn hello(req: &mut Request) -> Result<(), MyError> {
+    let name = req.param("name").expect("missing parameter: name");
+    let message = format!("hello, {}!", name);
+    req.respond(message);
     Ok(())
 }
 
