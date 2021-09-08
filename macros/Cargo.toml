@@ -1,5 +1,5 @@
 [package]
-name = "dawn-macros"
+name = "atium-macros"
 version = "0.1.0"
 edition = "2018"
 

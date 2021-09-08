@@ -13,5 +13,5 @@ pub use request::Request;
 pub use response::Response;
 pub use server::run;
 
-pub use dawn_macros::endpoint;
+pub use atium_macros::endpoint;
 pub use hyper::Body;

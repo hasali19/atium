@@ -1,8 +1,8 @@
 use async_trait::async_trait;
-use dawn::logger::Logger;
-use dawn::respond::RespondRequestExt;
-use dawn::router::{Router, RouterRequestExt};
-use dawn::{endpoint, Handler, Next, Request, Response};
+use atium::logger::Logger;
+use atium::respond::RespondRequestExt;
+use atium::router::{Router, RouterRequestExt};
+use atium::{endpoint, Handler, Next, Request, Response};
 use env_logger::Env;
 use hyper::StatusCode;
 
@@ -40,9 +40,9 @@ async fn main() {
     });
 
     let addr = ([127, 0, 0, 1], 8080);
-    let handler = dawn::compose!(Logger::default(), ErrorHandler, router, fallback);
+    let handler = atium::compose!(Logger::default(), ErrorHandler, router, fallback);
 
-    dawn::run(addr, handler).await.unwrap();
+    atium::run(addr, handler).await.unwrap();
 }
 
 #[endpoint]

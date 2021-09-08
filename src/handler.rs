@@ -95,6 +95,6 @@ macro_rules! compose {
     };
 
     ($e:expr, $($es:expr),+) => {
-        ($e, ::dawn::compose!($($es),+))
+        ($e, $crate::compose!($($es),+))
     }
 }

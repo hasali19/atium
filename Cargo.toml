@@ -1,5 +1,5 @@
 [package]
-name = "dawn"
+name = "atium"
 version = "0.1.0"
 authors = ["Hasan Ali <hasan@hasali.dev>"]
 edition = "2018"
@@ -15,7 +15,7 @@ hyper = { version = "0.14", features = ["http1", "runtime", "server"] }
 log = "0.4"
 routefinder = "0.4"
 
-dawn-macros = { path = "macros" }
+atium-macros = { path = "macros" }
 
 [dev-dependencies]
 env_logger = "0.8"
