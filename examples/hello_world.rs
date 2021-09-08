@@ -44,8 +44,7 @@ async fn main() {
 }
 
 #[endpoint]
-async fn index(req: &mut Request) -> anyhow::Result<()> {
-    req.set_res((StatusCode::OK, "hello, world!"));
+async fn index(req: &mut Request) -> Result<(), MyError> {
     Ok(())
 }
 
@@ -55,7 +54,6 @@ async fn error(_: &mut Request) -> Result<(), MyError> {
 }
 
 #[endpoint]
-async fn fallback(req: &mut Request) -> anyhow::Result<()> {
-    req.set_res((StatusCode::OK, "this is the fallback route"));
+async fn fallback(req: &mut Request) -> Result<(), MyError> {
     Ok(())
 }

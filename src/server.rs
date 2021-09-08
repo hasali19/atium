@@ -8,6 +8,8 @@ use hyper::{Body, Server, StatusCode};
 use crate::handler::NextFn;
 use crate::{Handler, Request, Response};
 
+pub use hyper::Error;
+
 async fn service(
     req: Request,
     handler: Arc<impl Handler>,
@@ -22,7 +24,7 @@ async fn service(
     Ok(res.into_inner())
 }
 
-pub async fn run(addr: impl Into<SocketAddr>, handler: impl Handler) -> anyhow::Result<()> {
+pub async fn run(addr: impl Into<SocketAddr>, handler: impl Handler) -> Result<(), Error> {
     let addr = addr.into();
     let handler = Arc::new(handler);
 
@@ -37,7 +39,5 @@ pub async fn run(addr: impl Into<SocketAddr>, handler: impl Handler) -> anyhow::
 
     log::info!("running server at http://{}", addr);
 
-    Server::bind(&addr).serve(make_svc).await?;
-
-    Ok(())
+    Server::bind(&addr).serve(make_svc).await
 }
