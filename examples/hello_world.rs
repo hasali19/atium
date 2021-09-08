@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use dawn::logger::Logger;
+use dawn::respond::RespondRequestExt;
 use dawn::router::Router;
 use dawn::{endpoint, Handler, Next, Request, Response};
 use env_logger::Env;
@@ -45,6 +46,7 @@ async fn main() {
 
 #[endpoint]
 async fn index(req: &mut Request) -> Result<(), MyError> {
+    req.ok().body("hello, world!");
     Ok(())
 }
 
@@ -55,5 +57,6 @@ async fn error(_: &mut Request) -> Result<(), MyError> {
 
 #[endpoint]
 async fn fallback(req: &mut Request) -> Result<(), MyError> {
+    req.ok().body("this is the fallback route");
     Ok(())
 }

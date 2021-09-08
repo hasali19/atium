@@ -21,21 +21,12 @@ impl Request {
         self.inner.uri()
     }
 
-    pub fn path(&self) -> &str {
-        self.uri().path()
-    }
-
     pub fn ext<T: Send + Sync + 'static>(&self) -> Option<&T> {
         self.inner.extensions().get()
     }
 
     pub fn set_ext<T: Send + Sync + 'static>(&mut self, val: T) -> Option<T> {
         self.inner.extensions_mut().insert(val)
-    }
-
-    pub fn with_ext<T: Send + Sync + 'static>(mut self, val: T) -> Self {
-        self.set_ext(val);
-        self
     }
 
     pub fn take_ext<T: Send + Sync + 'static>(&mut self) -> Option<T> {
@@ -46,13 +37,12 @@ impl Request {
         self.res.as_ref()
     }
 
-    pub fn set_res(&mut self, res: impl Into<Response>) {
-        self.res = Some(res.into());
+    pub fn res_or_default_mut(&mut self) -> &mut Response {
+        self.res.get_or_insert_with(Response::default)
     }
 
-    pub fn with_res(mut self, res: impl Into<Response>) -> Self {
-        self.set_res(res.into());
-        self
+    pub fn set_res(&mut self, res: impl Into<Response>) -> &mut Response {
+        self.res.insert(res.into())
     }
 
     pub fn take_res(&mut self) -> Option<Response> {

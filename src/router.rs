@@ -13,11 +13,11 @@ pub struct Router {
 
 #[async_trait]
 impl Handler for Router {
-    async fn run(&self, req: crate::Request, next: &dyn crate::Next) -> Request {
+    async fn run(&self, mut req: crate::Request, next: &dyn crate::Next) -> Request {
         let m = self
             .method_map
             .get(req.method())
-            .and_then(|r| r.recognize(req.path()).ok())
+            .and_then(|r| r.recognize(req.uri().path()).ok())
             .map(|Match { handler, params }| (handler, params));
 
         let (handler, params) = match m {
@@ -25,7 +25,8 @@ impl Handler for Router {
             None => return next.run(req).await,
         };
 
-        handler.run(req.with_ext(params), next).await
+        req.set_ext(params);
+        handler.run(req, next).await
     }
 }
 
@@ -67,11 +68,11 @@ impl Router {
     method_fn!(trace, TRACE);
 }
 
-pub trait RequestExt {
+pub trait RouterRequestExt {
     fn param(&self, name: &str) -> Option<&str>;
 }
 
-impl RequestExt for Request {
+impl RouterRequestExt for Request {
     fn param(&self, name: &str) -> Option<&str> {
         self.ext::<Params>().and_then(|params| params.find(name))
     }
