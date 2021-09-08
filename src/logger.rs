@@ -4,15 +4,15 @@ use async_trait::async_trait;
 use hyper::StatusCode;
 
 use crate::handler::Next;
-use crate::{Handler, Request, Result};
+use crate::{Handler, Request};
 
 #[derive(Default)]
 pub struct Logger(PhantomData<()>);
 
 #[async_trait]
 impl Handler for Logger {
-    async fn run(&self, req: Request, next: &dyn Next) -> Result {
-        let req = next.run(req).await?;
+    async fn run(&self, req: Request, next: &dyn Next) -> Request {
+        let req = next.run(req).await;
         let status = req
             .res()
             .map(|res| res.status())
@@ -24,6 +24,6 @@ impl Handler for Logger {
             log::error!("{} {} -> {}", req.method(), req.uri(), status);
         }
 
-        Ok(req)
+        req
     }
 }

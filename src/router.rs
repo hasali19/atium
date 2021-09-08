@@ -13,7 +13,7 @@ pub struct Router {
 
 #[async_trait]
 impl Handler for Router {
-    async fn run(&self, req: crate::Request, next: &dyn crate::Next) -> crate::Result {
+    async fn run(&self, req: crate::Request, next: &dyn crate::Next) -> Request {
         let m = self
             .method_map
             .get(req.method())

@@ -12,16 +12,7 @@ async fn service(
     req: Request,
     handler: Arc<impl Handler>,
 ) -> std::result::Result<hyper::Response<Body>, Infallible> {
-    let next = NextFn(|req| async move { Ok(req) });
-    let mut req = match handler.run(req, &next).await {
-        Ok(req) => req,
-        Err(e) => {
-            return Ok(hyper::Response::builder()
-                .status(StatusCode::INTERNAL_SERVER_ERROR)
-                .body(e.to_string().into())
-                .unwrap())
-        }
-    };
+    let mut req = handler.run(req, &NextFn(|req| async move { req })).await;
 
     let res = match req.take_res() {
         Some(res) => res,

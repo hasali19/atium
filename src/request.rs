@@ -1,6 +1,6 @@
 use hyper::{Body, Method, Uri};
 
-use crate::{RequestError, Response};
+use crate::Response;
 
 #[derive(Debug)]
 pub struct Request {
@@ -57,9 +57,5 @@ impl Request {
 
     pub fn take_res(&mut self) -> Option<Response> {
         self.res.take()
-    }
-
-    pub fn into_error(self, e: impl Into<anyhow::Error>) -> RequestError {
-        RequestError::new(self, e)
     }
 }
