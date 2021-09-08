@@ -11,20 +11,43 @@ pub struct Router {
     method_map: HashMap<Method, routefinder::Router<Box<dyn Handler>>>,
 }
 
+struct MatchedPath(usize);
+
 #[async_trait]
 impl Handler for Router {
     async fn run(&self, mut req: crate::Request, next: &dyn crate::Next) -> Request {
+        // If this is a nested router, we should skip the part of the path that has
+        // already been matched.
+        let offset = match req.take_ext::<MatchedPath>() {
+            Some(MatchedPath(n)) => n,
+            None => 0,
+        };
+
+        let path = req.uri().path();
         let m = self
             .method_map
             .get(req.method())
-            .and_then(|r| r.best_match(req.uri().path()));
+            .and_then(|r| r.best_match(&path[offset..]));
 
         let (handler, params) = match m {
-            Some(val) => (val.handler(), val.captures().into_owned()),
+            Some(val) => (val.handler(), val.captures()),
             None => return next.run(req).await,
         };
 
+        // Calculate how much of the path has been matched.
+        // If this is a wildcard route, calculate the length of the matched part using
+        // some simple pointer arithmetic.
+        // Otherwise it's just the length of the path, since the whole thing was matched.
+        let start = match params.wildcard() {
+            Some(wildcard) => offset + wildcard.as_ptr() as usize - path.as_ptr() as usize,
+            None => path.len(),
+        };
+
+        let params = params.into_owned();
+
+        req.set_ext(MatchedPath(start));
         req.set_ext(params);
+
         handler.run(req, next).await
     }
 }
