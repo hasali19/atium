@@ -13,5 +13,6 @@ pub use request::Request;
 pub use response::Response;
 pub use server::run;
 
+pub use async_trait::async_trait;
 pub use atium_macros::endpoint;
 pub use hyper::body::Bytes;
