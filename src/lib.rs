@@ -14,4 +14,4 @@ pub use response::Response;
 pub use server::run;
 
 pub use atium_macros::endpoint;
-pub use hyper::Body;
+pub use hyper::body::Bytes;

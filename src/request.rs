@@ -1,4 +1,6 @@
+use hyper::body::Buf;
 use hyper::{Body, Method, Uri};
+use serde::de::DeserializeOwned;
 
 use crate::Response;
 
@@ -19,6 +21,18 @@ impl Request {
 
     pub fn uri(&self) -> &Uri {
         self.inner.uri()
+    }
+
+    pub async fn body_bytes(&mut self) -> Result<hyper::body::Bytes, hyper::Error> {
+        hyper::body::to_bytes(std::mem::take(self.inner.body_mut())).await
+    }
+
+    pub async fn body_json<T: DeserializeOwned>(&mut self) -> serde_json::Result<T> {
+        let body = hyper::body::aggregate(std::mem::take(self.inner.body_mut()))
+            .await
+            .unwrap();
+
+        serde_json::from_reader(body.reader())
     }
 
     pub fn ext<T: Send + Sync + 'static>(&self) -> Option<&T> {
