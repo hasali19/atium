@@ -17,10 +17,12 @@ impl Handler for Logger {
         match status {
             None => log::error!("{} {} -> no response", req.method(), req.uri()),
             Some(status) => {
-                if status.is_success() {
-                    log::info!("{} {} -> {}", req.method(), req.uri(), status);
-                } else {
+                if status.is_client_error() {
+                    log::warn!("{} {} -> {}", req.method(), req.uri(), status);
+                } else if status.is_server_error() {
                     log::error!("{} {} -> {}", req.method(), req.uri(), status);
+                } else {
+                    log::info!("{} {} -> {}", req.method(), req.uri(), status);
                 }
             }
         }
