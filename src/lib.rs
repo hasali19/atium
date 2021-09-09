@@ -3,6 +3,7 @@ mod response;
 
 pub mod handler;
 pub mod logger;
+pub mod query;
 pub mod respond;
 pub mod router;
 pub mod server;
