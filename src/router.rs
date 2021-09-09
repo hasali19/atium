@@ -1,4 +1,6 @@
 use std::collections::HashMap;
+use std::convert::Infallible;
+use std::str::FromStr;
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -124,12 +126,30 @@ impl<'a, 'b> Route<'a, 'b> {
     }
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum ParamError<E> {
+    #[error("param not found")]
+    NotFound,
+    #[error("parse error: {0}")]
+    ParseError(E),
+}
+
 pub trait RouterRequestExt {
-    fn param(&self, name: &str) -> Option<&str>;
+    fn param_str(&self, name: &str) -> Result<&str, ParamError<Infallible>>;
+    fn param<T: FromStr>(&self, name: &str) -> Result<T, ParamError<T::Err>>;
 }
 
 impl RouterRequestExt for Request {
-    fn param(&self, name: &str) -> Option<&str> {
-        self.ext::<Captures>().and_then(|params| params.get(name))
+    fn param_str(&self, name: &str) -> Result<&str, ParamError<Infallible>> {
+        self.ext::<Captures>()
+            .and_then(|params| params.get(name))
+            .ok_or(ParamError::NotFound)
+    }
+
+    fn param<T: FromStr>(&self, name: &str) -> Result<T, ParamError<T::Err>> {
+        self.ext::<Captures>()
+            .and_then(|params| params.get(name))
+            .ok_or(ParamError::NotFound)
+            .and_then(|p| p.parse().map_err(ParamError::ParseError))
     }
 }

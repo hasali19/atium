@@ -53,7 +53,7 @@ async fn index(req: &mut Request) -> Result<(), MyError> {
 
 #[endpoint]
 async fn hello(req: &mut Request) -> Result<(), MyError> {
-    let name = req.param("name").expect("missing parameter: name");
+    let name = req.param_str("name").expect("missing parameter: name");
     let message = format!("hello, {}!", name);
     req.respond(message);
     Ok(())
