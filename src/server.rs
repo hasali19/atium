@@ -1,24 +1,37 @@
-use std::convert::Infallible;
+use std::fmt::Display;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
 use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Server, StatusCode};
+use hyper::{Body, Server};
 
 use crate::handler::NextFn;
-use crate::{Handler, Request, Response};
+use crate::{Handler, Request};
 
 pub use hyper::Error;
+
+#[derive(Debug)]
+struct NoResponse;
+
+impl Display for NoResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "no response")
+    }
+}
+
+impl std::error::Error for NoResponse {}
 
 async fn service(
     req: Request,
     handler: Arc<impl Handler>,
-) -> std::result::Result<hyper::Response<Body>, Infallible> {
-    let mut req = handler.run(req, &NextFn(|req| async move { req })).await;
+) -> std::result::Result<hyper::Response<Body>, NoResponse> {
+    let mut req = handler
+        .run(req, &NextFn(|req: Request| async move { req }))
+        .await;
 
     let res = match req.take_res() {
         Some(res) => res,
-        None => Response::new().with_status(StatusCode::NOT_FOUND),
+        None => return Err(NoResponse),
     };
 
     Ok(res.into_inner())
@@ -31,7 +44,7 @@ pub async fn run(addr: impl Into<SocketAddr>, handler: impl Handler) -> Result<(
     let make_svc = make_service_fn(|_| {
         let handler = handler.clone();
         async {
-            Ok::<_, Infallible>(service_fn(move |req| {
+            Ok::<_, NoResponse>(service_fn(move |req| {
                 service(Request::new(req), handler.clone())
             }))
         }
