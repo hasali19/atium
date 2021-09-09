@@ -52,5 +52,16 @@ pub async fn run(addr: impl Into<SocketAddr>, handler: impl Handler) -> Result<(
 
     log::info!("running server at http://{}", addr);
 
-    Server::bind(&addr).serve(make_svc).await
+    Server::bind(&addr)
+        .serve(make_svc)
+        .with_graceful_shutdown(async {
+            tokio::signal::ctrl_c()
+                .await
+                .expect("failed to install ctrl+c signal handler")
+        })
+        .await?;
+
+    log::info!("shutting down server");
+
+    Ok(())
 }
