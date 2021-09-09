@@ -51,6 +51,10 @@ impl Request {
         self.res.as_ref()
     }
 
+    pub fn res_mut(&mut self) -> Option<&mut Response> {
+        self.res.as_mut()
+    }
+
     pub fn res_or_default_mut(&mut self) -> &mut Response {
         self.res.get_or_insert_with(Response::default)
     }
