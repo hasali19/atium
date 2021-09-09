@@ -1,3 +1,4 @@
+use hyper::header::{HeaderValue, IntoHeaderName};
 use hyper::{Body, StatusCode};
 
 #[derive(Debug, Default)]
@@ -22,6 +23,15 @@ impl Response {
 
     pub fn with_status(mut self, status: StatusCode) -> Self {
         self.set_status(status);
+        self
+    }
+
+    pub fn set_header(&mut self, name: impl IntoHeaderName, value: HeaderValue) {
+        self.0.headers_mut().insert(name, value);
+    }
+
+    pub fn with_header(mut self, name: impl IntoHeaderName, value: HeaderValue) -> Self {
+        self.set_header(name, value);
         self
     }
 
