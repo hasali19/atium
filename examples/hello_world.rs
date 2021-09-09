@@ -2,9 +2,8 @@ use async_trait::async_trait;
 use atium::logger::Logger;
 use atium::respond::RespondRequestExt;
 use atium::router::{Router, RouterRequestExt};
-use atium::{endpoint, Handler, Next, Request, Response};
+use atium::{endpoint, Handler, Next, Request, Response, StatusCode};
 use env_logger::Env;
-use hyper::StatusCode;
 
 struct MyError;
 
