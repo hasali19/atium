@@ -9,7 +9,7 @@ use crate::{Request, Response};
 
 pub trait RespondRequestExt {
     fn ok(&mut self) -> Respond;
-    fn respond(&mut self, res: impl Into<Response>) -> Respond;
+    fn respond<R: Into<Response>>(&mut self, res: R) -> Respond;
 }
 
 impl RespondRequestExt for Request {
@@ -17,7 +17,7 @@ impl RespondRequestExt for Request {
         Respond(self.res_or_default_mut())
     }
 
-    fn respond(&mut self, res: impl Into<Response>) -> Respond {
+    fn respond<R: Into<Response>>(&mut self, res: R) -> Respond {
         Respond(self.set_res(res.into()))
     }
 }
