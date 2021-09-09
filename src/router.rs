@@ -96,6 +96,32 @@ impl<'a, 'b> Route<'a, 'b> {
     method_fn!(post, POST);
     method_fn!(put, PUT);
     method_fn!(trace, TRACE);
+
+    pub fn any(self, handler: impl Handler) -> Self {
+        let handler = Arc::new(handler);
+        let methods = [
+            Method::CONNECT,
+            Method::DELETE,
+            Method::GET,
+            Method::HEAD,
+            Method::OPTIONS,
+            Method::PATCH,
+            Method::POST,
+            Method::PUT,
+            Method::TRACE,
+        ];
+
+        for method in methods {
+            self.0
+                .method_map
+                .entry(method.clone())
+                .or_insert_with(Default::default)
+                .add(self.1, handler.clone())
+                .expect("invalid path");
+        }
+
+        self
+    }
 }
 
 pub trait RouterRequestExt {
