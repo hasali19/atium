@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use async_trait::async_trait;
 use hyper::Method;
@@ -8,7 +9,7 @@ use crate::{Handler, Request};
 
 #[derive(Default)]
 pub struct Router {
-    method_map: HashMap<Method, routefinder::Router<Box<dyn Handler>>>,
+    method_map: HashMap<Method, routefinder::Router<Arc<dyn Handler>>>,
 }
 
 struct MatchedPath(usize);
@@ -52,14 +53,6 @@ impl Handler for Router {
     }
 }
 
-macro_rules! method_fn {
-    ($name:ident, $method:ident) => {
-        pub fn $name(&mut self, path: &str, handler: impl Handler) {
-            self.route(Method::$method, path, handler);
-        }
-    };
-}
-
 impl Router {
     pub fn new() -> Self {
         Router {
@@ -67,19 +60,33 @@ impl Router {
         }
     }
 
-    pub fn build(mut self, builder: impl Fn(&mut Router)) -> Self {
+    pub fn with(mut self, builder: impl Fn(&mut Router)) -> Self {
         builder(&mut self);
         self
     }
 
-    pub fn route(&mut self, method: Method, path: &str, handler: impl Handler) {
-        self.method_map
-            .entry(method)
-            .or_insert_with(Default::default)
-            .add(path, Box::new(handler))
-            .expect("invalid path");
+    pub fn route<'a, 'b>(&'a mut self, path: &'b str) -> Route<'a, 'b> {
+        Route(self, path)
     }
+}
 
+macro_rules! method_fn {
+    ($name:ident, $method:ident) => {
+        pub fn $name(self, handler: impl Handler) -> Self {
+            self.0
+                .method_map
+                .entry(Method::$method)
+                .or_insert_with(Default::default)
+                .add(self.1, Arc::new(handler))
+                .expect("invalid path");
+            self
+        }
+    };
+}
+
+pub struct Route<'a, 'b>(&'a mut Router, &'b str);
+
+impl<'a, 'b> Route<'a, 'b> {
     method_fn!(connect, CONNECT);
     method_fn!(delete, DELETE);
     method_fn!(get, GET);

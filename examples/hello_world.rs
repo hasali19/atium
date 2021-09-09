@@ -33,10 +33,10 @@ impl Handler for ErrorHandler {
 async fn main() {
     env_logger::init_from_env(Env::default().default_filter_or("debug"));
 
-    let router = Router::new().build(|r| {
-        r.get("/", index);
-        r.get("/error", error);
-        r.get("/hello/:name", hello);
+    let router = Router::new().with(|r| {
+        r.route("/").get(index);
+        r.route("/error").get(error);
+        r.route("/hello/:name").get(hello);
     });
 
     let addr = ([127, 0, 0, 1], 8080);
