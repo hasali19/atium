@@ -1,5 +1,5 @@
 use headers::{Header, HeaderMapExt};
-use hyper::{Body, StatusCode};
+use hyper::{Body, HeaderMap, StatusCode};
 
 #[derive(Debug, Default)]
 pub struct Response(hyper::Response<Body>);
@@ -24,6 +24,14 @@ impl Response {
     pub fn with_status(mut self, status: StatusCode) -> Self {
         self.set_status(status);
         self
+    }
+
+    pub fn headers(&self) -> &HeaderMap {
+        self.0.headers()
+    }
+
+    pub fn headers_mut(&mut self) -> &mut HeaderMap {
+        self.0.headers_mut()
     }
 
     pub fn set_header(&mut self, header: impl Header) {
