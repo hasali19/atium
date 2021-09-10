@@ -11,7 +11,7 @@ pub trait RespondRequestExt {
 
 impl RespondRequestExt for Request {
     fn ok(&mut self) -> Respond {
-        Respond(self.res_or_default_mut())
+        self.respond(StatusCode::OK)
     }
 
     fn respond<R: Into<Response>>(&mut self, res: R) -> Respond {
