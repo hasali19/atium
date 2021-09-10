@@ -1,5 +1,6 @@
+use headers::{Header, HeaderMapExt};
 use hyper::body::Buf;
-use hyper::{Body, Method, Uri};
+use hyper::{Body, HeaderMap, Method, Uri};
 use serde::de::DeserializeOwned;
 
 use crate::Response;
@@ -21,6 +22,14 @@ impl Request {
 
     pub fn uri(&self) -> &Uri {
         self.inner.uri()
+    }
+
+    pub fn headers(&self) -> &HeaderMap {
+        self.inner.headers()
+    }
+
+    pub fn header<H: Header>(&self) -> Option<H> {
+        self.inner.headers().typed_get()
     }
 
     pub async fn body_bytes(&mut self) -> Result<hyper::body::Bytes, hyper::Error> {

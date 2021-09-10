@@ -1,8 +1,5 @@
-use std::convert::TryInto;
-
-use hyper::header::{HeaderValue, IntoHeaderName, CONTENT_TYPE};
+use headers::{ContentType, Header};
 use hyper::{Body, StatusCode};
-use mime::APPLICATION_JSON;
 use serde::Serialize;
 
 use crate::{Request, Response};
@@ -30,14 +27,9 @@ impl<'a> Respond<'a> {
         self
     }
 
-    pub fn header<V: TryInto<HeaderValue>>(
-        self,
-        name: impl IntoHeaderName,
-        value: V,
-    ) -> Result<Self, V::Error> {
-        let value = value.try_into()?;
-        self.0.set_header(name, value);
-        Ok(self)
+    pub fn header(self, header: impl Header) -> Self {
+        self.0.set_header(header);
+        self
     }
 
     pub fn body(self, body: impl Into<Body>) -> Self {
@@ -47,8 +39,7 @@ impl<'a> Respond<'a> {
 
     pub fn json<T: Serialize>(self, val: &T) -> serde_json::Result<Self> {
         Ok(self
-            .header(CONTENT_TYPE, APPLICATION_JSON.essence_str())
-            .unwrap()
+            .header(ContentType::json())
             .body(serde_json::to_vec(val)?))
     }
 }

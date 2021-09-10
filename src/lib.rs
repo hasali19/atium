@@ -17,4 +17,9 @@ pub use server::run;
 pub use async_trait::async_trait;
 pub use atium_macros::endpoint;
 pub use hyper::body::Bytes;
-pub use hyper::{header, Body, StatusCode};
+pub use hyper::{Body, StatusCode};
+
+pub mod headers {
+    pub use headers::*;
+    pub use hyper::header as names;
+}
