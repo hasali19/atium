@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::convert::Infallible;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -127,29 +126,34 @@ impl<'a, 'b> Route<'a, 'b> {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum ParamError<E> {
+pub enum ParamError {
     #[error("param not found")]
     NotFound,
     #[error("parse error: {0}")]
-    ParseError(E),
+    ParseError(Box<dyn std::error::Error + Send + Sync>),
 }
 
 pub trait RouterRequestExt {
-    fn param_str(&self, name: &str) -> Result<&str, ParamError<Infallible>>;
-    fn param<T: FromStr>(&self, name: &str) -> Result<T, ParamError<T::Err>>;
+    fn param_str(&self, name: &str) -> Result<&str, ParamError>;
+    fn param<T: FromStr>(&self, name: &str) -> Result<T, ParamError>
+    where
+        T::Err: std::error::Error + Send + Sync + 'static;
 }
 
 impl RouterRequestExt for Request {
-    fn param_str(&self, name: &str) -> Result<&str, ParamError<Infallible>> {
+    fn param_str(&self, name: &str) -> Result<&str, ParamError> {
         self.ext::<Captures>()
             .and_then(|params| params.get(name))
             .ok_or(ParamError::NotFound)
     }
 
-    fn param<T: FromStr>(&self, name: &str) -> Result<T, ParamError<T::Err>> {
+    fn param<T: FromStr>(&self, name: &str) -> Result<T, ParamError>
+    where
+        T::Err: std::error::Error + Send + Sync + 'static,
+    {
         self.ext::<Captures>()
             .and_then(|params| params.get(name))
             .ok_or(ParamError::NotFound)
-            .and_then(|p| p.parse().map_err(ParamError::ParseError))
+            .and_then(|p| p.parse().map_err(|e| ParamError::ParseError(Box::new(e))))
     }
 }
