@@ -40,12 +40,10 @@ impl RespondRequestExt for Request {
         let mime = mime_guess::from_path(&path).first_or("video/*".parse().unwrap());
         let mut file = File::open(path).await?;
 
-        let length = file.metadata().await?.len();
+        let total_length = file.metadata().await?.len();
         let range = self.header::<Range>().and_then(|range| range.iter().next());
 
-        let mut res = Response::ok()
-            .with_header(AcceptRanges::bytes())
-            .with_header(ContentLength(length));
+        let mut res = Response::ok().with_header(AcceptRanges::bytes());
 
         match range {
             Some((from, to)) => {
@@ -58,27 +56,28 @@ impl RespondRequestExt for Request {
                 let to = match to {
                     Bound::Included(n) => n,
                     Bound::Excluded(n) => n - 1,
-                    Bound::Unbounded => length - 1,
+                    Bound::Unbounded => total_length - 1,
                 };
 
                 file.seek(SeekFrom::Start(from)).await?;
 
-                let total_length = length;
-                let length = u64::min(length - from, to - from + 1);
-                let reader = file.take(length);
+                let read_length = u64::min(total_length - from, to - from + 1);
+                let reader = file.take(read_length);
                 let stream = FramedRead::new(reader, BytesCodec::new());
                 let body = Body::wrap_stream(stream);
-                let range = from..=from + length - 1;
+                let range = from..=from + read_length - 1;
 
                 res.set_status(StatusCode::PARTIAL_CONTENT);
                 res.set_header(ContentRange::bytes(range, total_length).unwrap());
                 res.set_header(ContentType::from(mime));
+                res.set_header(ContentLength(read_length));
                 res.set_body(body);
             }
             None => {
                 let stream = FramedRead::new(file, BytesCodec::new());
                 let body = Body::wrap_stream(stream);
 
+                res.set_header(ContentLength(total_length));
                 res.set_body(body);
             }
         }
