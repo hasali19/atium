@@ -12,7 +12,7 @@ pub mod state;
 pub use handler::{Handler, Next};
 pub use request::Request;
 pub use response::Response;
-pub use server::run;
+pub use server::{run, ServerError};
 
 pub use async_trait::async_trait;
 pub use atium_macros::endpoint;

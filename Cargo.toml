@@ -13,6 +13,7 @@ members = ["macros"]
 atium-macros = { path = "macros" }
 
 async-trait = "0.1"
+futures = "0.3"
 headers = "0.3"
 log = "0.4"
 mime = "0.3"
