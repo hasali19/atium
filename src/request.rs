@@ -32,15 +32,16 @@ impl Request {
         self.inner.headers().typed_get()
     }
 
+    pub fn body(&mut self) -> Body {
+        std::mem::take(self.inner.body_mut())
+    }
+
     pub async fn body_bytes(&mut self) -> Result<hyper::body::Bytes, hyper::Error> {
-        hyper::body::to_bytes(std::mem::take(self.inner.body_mut())).await
+        hyper::body::to_bytes(self.body()).await
     }
 
     pub async fn body_json<T: DeserializeOwned>(&mut self) -> serde_json::Result<T> {
-        let body = hyper::body::aggregate(std::mem::take(self.inner.body_mut()))
-            .await
-            .unwrap();
-
+        let body = hyper::body::aggregate(self.body()).await.unwrap();
         serde_json::from_reader(body.reader())
     }
 
