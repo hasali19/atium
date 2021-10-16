@@ -43,7 +43,9 @@ impl RespondRequestExt for Request {
         let total_length = file.metadata().await?.len();
         let range = self.header::<Range>().and_then(|range| range.iter().next());
 
-        let mut res = Response::ok().with_header(AcceptRanges::bytes());
+        let mut res = Response::ok()
+            .with_header(AcceptRanges::bytes())
+            .with_header(ContentType::from(mime));
 
         match range {
             Some((from, to)) => {
@@ -69,7 +71,6 @@ impl RespondRequestExt for Request {
 
                 res.set_status(StatusCode::PARTIAL_CONTENT);
                 res.set_header(ContentRange::bytes(range, total_length).unwrap());
-                res.set_header(ContentType::from(mime));
                 res.set_header(ContentLength(read_length));
                 res.set_body(body);
             }
