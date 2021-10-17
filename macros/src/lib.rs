@@ -29,8 +29,15 @@ use quote::quote;
 /// The error can then be accessed normally from the request extensions in an error handler
 /// higher up in the request pipeline.
 #[proc_macro_attribute]
-pub fn endpoint(_: TokenStream, item: TokenStream) -> TokenStream {
-    let input: syn::ItemFn = syn::parse(item).unwrap();
+pub fn endpoint(_: TokenStream, mut item: TokenStream) -> TokenStream {
+    let input: syn::ItemFn = match syn::parse(item.clone()) {
+        Ok(input) => input,
+        Err(e) => {
+            item.extend(TokenStream::from(e.into_compile_error()));
+            return item;
+        }
+    };
+
     let vis = input.vis.clone();
     let name = input.sig.ident.clone();
 
