@@ -1,7 +1,9 @@
 use std::convert::Infallible;
 
 use hyper::{Body, StatusCode};
+use serde::Serialize;
 
+use crate::respond::RespondRequestExt;
 use crate::Request;
 
 pub trait Responder {
@@ -59,3 +61,12 @@ impl Responder for eyre::Error {
     }
 }
 
+pub struct Json<T>(pub T);
+
+impl<T: Serialize> Responder for Json<T> {
+    fn respond_to(self, req: &mut Request) {
+        if let Err(e) = req.ok().json(&self.0) {
+            req.set_res((StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
+        }
+    }
+}
