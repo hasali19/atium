@@ -1,6 +1,9 @@
+use std::convert::Infallible;
+
 use async_trait::async_trait;
 use atium::logger::Logger;
 use atium::respond::RespondRequestExt;
+use atium::responder::Responder;
 use atium::router::{Router, RouterRequestExt};
 use atium::{endpoint, Handler, Next, Request, Response, StatusCode};
 use env_logger::Env;
@@ -44,14 +47,19 @@ async fn main() {
     atium::run(addr, handler).await.unwrap();
 }
 
-#[endpoint]
-async fn index(req: &mut Request) -> Result<(), MyError> {
-    req.ok().body("hello, world!");
-    Ok(())
+impl Responder for MyError {
+    fn respond_to(self, req: &mut Request) {
+        req.set_ext(self);
+    }
 }
 
 #[endpoint]
-async fn hello(req: &mut Request) -> Result<(), MyError> {
+async fn index(_: &mut Request) -> Result<impl Responder, MyError> {
+    Ok("hello, world!")
+}
+
+#[endpoint]
+async fn hello(req: &mut Request) -> Result<impl Responder, MyError> {
     let name = req.param_str("name").expect("missing parameter: name");
     let message = format!("hello, {}!", name);
     req.respond(message);
@@ -59,12 +67,11 @@ async fn hello(req: &mut Request) -> Result<(), MyError> {
 }
 
 #[endpoint]
-async fn error(_: &mut Request) -> Result<(), MyError> {
+async fn error(_: &mut Request) -> Result<Infallible, MyError> {
     Err(MyError)
 }
 
 #[endpoint]
-async fn fallback(req: &mut Request) -> Result<(), MyError> {
-    req.ok().body("this is the fallback route");
-    Ok(())
+async fn fallback(_: &mut Request) -> impl Responder {
+    "this is the fallback route"
 }

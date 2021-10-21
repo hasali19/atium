@@ -6,22 +6,18 @@ use quote::quote;
 /// This allows writing an endpoint as:
 /// ```
 /// #[endpoint]
-/// async fn my_endpoint(req: &mut Request) -> Result<(), MyError> {
-///     // Do stuff with req ...
-///     Ok(())
+/// async fn my_endpoint(req: &mut Request) -> Result<impl Responder, MyError> {
+///     Ok("hello, world!")
 /// }
 /// ```
-/// which is transformed into:
+/// which is transformed into something like:
 /// ```
 /// async fn my_endpoint(mut req: Request) -> Request {
-///     async fn my_endpoint(req: &mut Request) -> Result<(), MyError> {
-///         // Do stuff with req ...
-///         Ok(())
+///     async fn my_endpoint(req: &mut Request) -> Result<impl Responder, MyError> {
+///         Ok("hello, world!")
 ///     }
 ///
-///     if let Err(e) = my_endpoint(&mut req).await {
-///         req.set_ext(e);
-///     }
+///     my_endpoint(&mut req).await.respond_to(&mut req);
 ///
 ///     req
 /// }
@@ -44,11 +40,8 @@ pub fn endpoint(_: TokenStream, mut item: TokenStream) -> TokenStream {
     TokenStream::from(quote! {
         #vis async fn #name(mut req: Request) -> Request {
             #input
-
-            if let Err(e) = #name(&mut req).await {
-                req.set_ext(e);
-            }
-
+            use atium::responder::Responder;
+            Responder::respond_to(#name(&mut req).await, &mut req);
             req
         }
     })

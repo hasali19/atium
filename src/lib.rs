@@ -5,12 +5,14 @@ pub mod handler;
 pub mod logger;
 pub mod query;
 pub mod respond;
+pub mod responder;
 pub mod router;
 pub mod server;
 pub mod state;
 
 pub use handler::{Handler, Next};
 pub use request::Request;
+pub use responder::Responder;
 pub use response::Response;
 pub use server::{run, ServerError};
 
