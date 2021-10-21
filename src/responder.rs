@@ -51,3 +51,11 @@ impl<T: Responder, E: Responder> Responder for Result<T, E> {
         }
     }
 }
+
+#[cfg(feature = "eyre")]
+impl Responder for eyre::Error {
+    fn respond_to(self, req: &mut Request) {
+        req.set_ext(self);
+    }
+}
+
