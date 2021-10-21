@@ -40,8 +40,8 @@ pub fn endpoint(_: TokenStream, mut item: TokenStream) -> TokenStream {
     TokenStream::from(quote! {
         #vis async fn #name(mut req: Request) -> Request {
             #input
-            use atium::responder::Responder;
-            Responder::respond_to(#name(&mut req).await, &mut req);
+            let res = #name(&mut req).await;
+            atium::responder::Responder::respond_to(res, &mut req);
             req
         }
     })
