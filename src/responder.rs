@@ -1,6 +1,8 @@
 use std::convert::Infallible;
 
-use crate::{Request, Response};
+use hyper::{Body, StatusCode};
+
+use crate::Request;
 
 pub trait Responder {
     fn respond_to(self, req: &mut Request);
@@ -13,7 +15,23 @@ impl Responder for () {
     fn respond_to(self, _: &mut Request) {}
 }
 
-impl<T: Into<Response>> Responder for T {
+macro_rules! impl_responder_for_into_response {
+    ($t:ty) => {
+        impl Responder for $t {
+            fn respond_to(self, req: &mut Request) {
+                req.set_res(self);
+            }
+        }
+    };
+}
+
+impl_responder_for_into_response!(StatusCode);
+impl_responder_for_into_response!(&'static str);
+impl_responder_for_into_response!(String);
+impl_responder_for_into_response!(Vec<u8>);
+impl_responder_for_into_response!(Body);
+
+impl<B: Into<Body>> Responder for (StatusCode, B) {
     fn respond_to(self, req: &mut Request) {
         req.set_res(self);
     }
