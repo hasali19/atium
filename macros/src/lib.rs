@@ -3,7 +3,11 @@ use quote::quote;
 
 /// Convenience macro for writing a slightly nicer endpoint function.
 ///
-/// This allows writing an endpoint as:
+/// Currently we cannot implement `Handler` for functions of type
+/// `Fn(&mut Request) -> impl Future<Output = impl Responder>`, due to
+/// the lifetime bounds being impossible to express.
+///
+/// This macro get around this by enabling writing an endpoint as:
 /// ```
 /// #[endpoint]
 /// async fn my_endpoint(req: &mut Request) -> Result<impl Responder, MyError> {
@@ -25,8 +29,6 @@ use quote::quote;
 ///     req
 /// }
 /// ```
-/// The error can then be accessed normally from the request extensions in an error handler
-/// higher up in the request pipeline.
 #[proc_macro_attribute]
 pub fn endpoint(_: TokenStream, mut item: TokenStream) -> TokenStream {
     let input: syn::ItemFn = match syn::parse(item.clone()) {
