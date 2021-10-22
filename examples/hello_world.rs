@@ -47,8 +47,9 @@ async fn main() {
     atium::run(addr, handler).await.unwrap();
 }
 
+#[async_trait]
 impl Responder for MyError {
-    fn respond_to(self, req: &mut Request) {
+    async fn respond_to(self, req: &mut Request) {
         req.set_ext(self);
     }
 }

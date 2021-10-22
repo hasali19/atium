@@ -17,7 +17,10 @@ use quote::quote;
 ///         Ok("hello, world!")
 ///     }
 ///
-///     my_endpoint(&mut req).await.respond_to(&mut req);
+///     my_endpoint(&mut req)
+///         .await
+///         .respond_to(&mut req)
+///         .await;
 ///
 ///     req
 /// }
@@ -41,7 +44,7 @@ pub fn endpoint(_: TokenStream, mut item: TokenStream) -> TokenStream {
         #vis async fn #name(mut req: Request) -> Request {
             #input
             let res = #name(&mut req).await;
-            atium::responder::Responder::respond_to(res, &mut req);
+            atium::responder::Responder::respond_to(res, &mut req).await;
             req
         }
     })
