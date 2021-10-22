@@ -25,6 +25,13 @@ impl Responder for () {
     async fn respond_to(self, _: &mut Request) {}
 }
 
+#[async_trait]
+impl Responder for Response {
+    async fn respond_to(self, req: &mut Request) {
+        req.set_res(self);
+    }
+}
+
 macro_rules! impl_responder_for_into_response {
     ($t:ty) => {
         #[async_trait]
